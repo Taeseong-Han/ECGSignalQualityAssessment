@@ -1,124 +1,14 @@
-# Label-Noise Resilient ECG Signal Quality Assessment via Diffusion Models and Wasserstein-Guided Data Refinement
+# Reproducing the Paper
 
-This repository contains the official implementation of  
-**"Diffusion-Based Electrocardiography Noise Quantification via Anomaly Detection"**  
+This document provides step-by-step instructions to reproduce the full training and evaluation pipeline from the paper.
+
+For **installation and usage**, see [README.md](README.md).
+
 [![arXiv](https://img.shields.io/badge/arXiv-2506.11815-b31b1b.svg)](https://arxiv.org/abs/2506.11815)
 
-## 🔍 Introduction
-
-This study introduces a diffusion-based framework for ECG noise quantification using reconstruction-based anomaly
-detection. The model is trained solely on clean ECG signals, learning to reconstruct clean representations from
-potentially noisy inputs. **Reconstruction errors serve as a proxy for noise levels** without requiring explicit noise
-labels during inference.
-
-- **Noise Quantification**: Peak Signal-to-Noise Ratio (**PSNR**), a robust metric for quantifying distortion in the
-  time-frequency domain, is employed. PSNR is inversely proportional to noise levels:
-    - **Lower PSNR** 📉💥 indicates **higher noise**.
-    - **Higher PSNR** indicates **better signal quality**.
-
-Our optimized model achieves robust noise quantification with only **three reverse diffusion steps**, ensuring efficient
-and scalable real-world applicability.
-
-### 🖼️ Limitations of Human Labels in ECG Noise Assessment
-
-![External validation](figures/external_validation.jpg)
-
-**Figure** demonstrates the practical utility of PSNR-based segment analysis and Wasserstein-1 distance (**$W_1$**)
--based evaluation (leveraging PSNR distributions):
-
-- **(a)** Examples from the BUT QDB dataset highlight discrepancies where a segment labeled as "Clean" by humans
-  exhibited a lower PSNR (higher noise) compared to another segment labeled "Moderate Noise." Specifically,
-  noise-labeled samples with high PSNR appeared visually clean, whereas clean-labeled samples with low PSNR clearly
-  exhibited noise artifacts.
-
-- **(b)** Analysis of data from the **CinC Challenge 2011** dataset revealed significant overlap in PSNR distributions
-  between human-labeled clean and noisy segments. Further visual inspection (Figure (b)) confirmed these overlapping
-  segments indeed exhibited similar noise characteristics, underscoring the limitations of human annotations.
-
-<br>
-
-## ⚙️ Installation
-Clone the repository and install required dependencies:
-```bash
-git clone https://github.com/Taeseong-Han/ECGNoiseQuantification.git
-cd ECGNoiseQuantification
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-#### ✅ Environment
-This project was developed and tested on the Python: 3.8.10 environment
-
-#### ⚠️ CUDA Compatibility
-Due to CUDA version compatibility, install the following packages after installing requirements.txt
-```bash
-# PyTorch (CUDA 11.8)
-pip install torch==2.1.1 torchvision==0.16.1 --index-url https://download.pytorch.org/whl/cu118
-
-# JAX (CUDA 11.8 + cuDNN 8.2)
-pip install jaxlib==0.3.25+cuda11.cudnn82 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-pip install jax==0.3.25
-```
-🔧 Adjust versions if you're using a different CUDA version
-
-<br>
-
-## 🧪 Example Usage
-
-#### 🔗 Pretrained Model
-
-You can download the pretrained latent diffusion model from 🤗 Hugging Face:
-
-👉 [Download pretrained model](https://huggingface.co/Taeseong-Han/ECGNoiseQuantification/blob/main/pretrained_ldm.pth)
-
-#### 💻 Inference Example
-
-Higher PSNR values indicate better signal quality, corresponding to lower noise levels.
-In practice, a PSNR threshold of approximately 24 effectively distinguishes severely degraded ECG segments from
-acceptable ones.
-
-see [demo.ipynb](https://github.com/Taeseong-Han/ECGNoiseQuantification/blob/main/demo.ipynb) or use the following code
-snippet:
-
-```python
-import numpy as np
-from utils.inference import ecg_noise_quantification
-
-checkpoint_path = "[YOUR_PATH]/pretrained_ldm.pth"
-ecg = np.load("./data/database/ecg_example.npz")['signal']
-
-output = ecg_noise_quantification(
-    ecg=ecg,  # numpy array of shape (leads, timepoints)
-    sampling_freq=500,  # sampling frequency in Hz
-    checkpoint_path=checkpoint_path,
-    return_images=True,
-)
-
-output.psnr: np.ndarray  # shape: (leads, segments)
-output.original_image: np.ndarray  # shape: (leads, segments, H, W)
-output.cleaned_image: np.ndarray  # shape: (leads, segments, H, W)
-```
-
-> The input ECG is automatically segmented into 10-second windows, each of which is converted into a time-frequency
-> representation via superlet transform. These scalograms are then fed into the pretrained diffusion model for
-> reconstruction-based anomaly detection.
->
->The output includes segment-level original and denoised scalograms, along with the corresponding PSNR values for each
-> segment.
->
-
-<br>
-<br>
-
-## 🧬 Reproducibility: Data Preprocessing and Training
-
-This section provides step-by-step instructions to:
-
-- Convert raw PTB-XL ECG data into time-frequency representations
-- Train the autoencoder used in latent diffusion
-- Run noise quantification and evaluation
-- Refine training data based on reconstruction-based noise analysis
-
 ---
+
+## 🧬 Data Preprocessing and Training
 
 #### 🖼️ Framework Overview
 
