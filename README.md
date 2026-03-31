@@ -1,6 +1,6 @@
 # ECG Signal Quality Assessment
 
-Diffusion-based ECG signal quality assessment using reconstruction error (PSNR) as a noise proxy — no noise labels required.
+Diffusion-based ECG signal quality assessment using reconstruction error (PSNR) as a signal quality proxy — no noise labels required.
 
 [![arXiv](https://img.shields.io/badge/arXiv-2506.11815-b31b1b.svg)](https://arxiv.org/abs/2506.11815)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
